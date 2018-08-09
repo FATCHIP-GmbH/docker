@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+
+  apache-php:
+    image: fatchip/apache-php:latest
+    hostname: ${SHOP_HOSTNAME}
+    restart: always
+    depends_on:
+      - mysql
+    volumes:
+      - ${PWD}/data/www/${SHOP_TYPE}${SHOP_VERSION}:/var/www/${SHOP_TYPE}${SHOP_VERSION}/
+    env_file:
+      - .env
+    ports:
+      - "${APACHE_PORT}:80"
+      - "${MAILCATCHER_PORT}:1080"
+
+  mysql:
+    image: mariadb
+    hostname: mysql.${DOMAIN}
+    restart: always
+    volumes:
+      - ${PWD}/data/www/${SHOP_TYPE}${SHOP_VERSION}/${SHOP_TYPE}${SHOP_VERSION}.sql:/docker-entrypoint-initdb.d/${SHOP_TYPE}${SHOP_VERSION}.sql
+      - mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+volumes:
+  mysql-data:
