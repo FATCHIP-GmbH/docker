@@ -19,7 +19,7 @@ print_info(){
   echo -e "phpmyadmin: http://${SHOP_HOSTNAME}.${DOMAIN}/phpmyadmin : (mysql)-user: root pw:root"
   echo -e "mailcatcher: http://${SHOP_HOSTNAME}.${DOMAIN}:${MAILCATCHER_PORT}"
   case "${SHOP_TYPE}" in
-    sw)    echo -e "Shop Admin: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/backend user: demo password: demo\\n" ;;
+    sw)    echo -e "Shop Admin: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/backend user: demo password: demo\\n Please wait 10-20s after creation until shop is ready\n!" ;;
     ox)    echo -e "Shop Admin: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/admin : user: support@fatchip.de password: support@fatchip.de\\n";;
     mage)  echo -e "Shop Admin: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/admin : user: fatchip password: Fatchip1\\n" ;;
   esac
