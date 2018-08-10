@@ -3,7 +3,7 @@ version: '3'
 services:
 
   apache-php:
-    image: ${IMAGE_VERSION}
+    image: ${IMAGE}:${IMAGE_VERSION}
     hostname: ${SHOP_HOSTNAME}
     restart: always
     depends_on:

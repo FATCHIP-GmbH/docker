@@ -40,7 +40,7 @@ clean_cache() {
 
 wait_for_mysql_initial_import(){
   echo_title  "waiting ${MYSQL_IMPORT_SLEEP=20S}s for initial db import"
-  sleep $MYSQL_IMPORT_SLEEP=20
+  sleep $MYSQL_IMPORT_SLEEP
 }
 
 update_settings(){
@@ -64,7 +64,7 @@ git_checkout(){
 
   [ ! -d  "data/www/${SHOP_TYPE}${SHOP_VERSION}" ] && \
     echo_title "checking out ${SHOP_TYPE}${SHOP_VERSION}" && \
-    git clone "${SHOP_REPO}/${SHOP_TYPE}.git" "data/www/${SHOP_TYPE}${SHOP_VERSION}"
+    git clone "${SHOP_REPO_PREFIX}/${SHOP_TYPE}.git" "data/www/${SHOP_TYPE}${SHOP_VERSION}"
 }
 
 create(){
