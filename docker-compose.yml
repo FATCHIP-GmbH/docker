@@ -16,9 +16,10 @@ services:
       - "${APACHE_PORT}:80"
       - "${MAILCATCHER_PORT}:1080"
     environment:
-      MYSQL_HOST: "mysql"
+      MYSQL_HOST: mysql
       MYSQL_USER: root
       MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${SHOP_TYPE}${SHOP_VERSION}
 
   mysql:
     image: mariadb

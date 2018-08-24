@@ -19,7 +19,7 @@ print_info(){
   echo -e "phpmyadmin: http://${SHOP_HOSTNAME}.${DOMAIN}/phpmyadmin : (mysql)-user: root pw:root"
   echo -e "mailcatcher: http://${SHOP_HOSTNAME}.${DOMAIN}:${MAILCATCHER_PORT}"
   case "${SHOP_TYPE}" in
-    sw)    echo -e "Shop Admin: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/backend user: demo password: demo\\n Please wait 10-20s after creation until shop is ready\n!" ;;
+    sw)    echo -e "Shop Admin: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/backend user: demo password: demo\\nPlease wait 10-20s after creation until shop is ready!\\n" ;;
     ox)    echo -e "Shop Admin: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/admin : user: support@fatchip.de password: support@fatchip.de\\n";;
     mage)  echo -e "Shop Admin: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/admin : user: fatchip password: Fatchip1\\n" ;;
   esac
@@ -44,7 +44,6 @@ wait_for_mysql_initial_import(){
 }
 
 update_settings(){
-  git_checkout
   echo_title "updating php version"
   docker-compose up -d
   echo_title "updating shop_hostname for ${SHOP_TYPE}${SHOP_VERSION}"
@@ -64,7 +63,7 @@ git_checkout(){
 
   [ ! -d  "data/www/${SHOP_TYPE}${SHOP_VERSION}" ] && \
     echo_title "checking out ${SHOP_TYPE}${SHOP_VERSION}" && \
-    git clone "${SHOP_REPO_PREFIX}/${SHOP_TYPE}.git" "data/www/${SHOP_TYPE}${SHOP_VERSION}"
+    git clone --branch "${SHOP_TYPE}${SHOP_VERSION}"  --single-branch "${SHOP_REPO_PREFIX}/${SHOP_TYPE}.git" "data/www/${SHOP_TYPE}${SHOP_VERSION}"
 }
 
 create(){
@@ -103,8 +102,7 @@ case "$1" in
 	  destroy ;;
 	status)
 	  print_info ;;
-
     *)
-	echo $"Usage: $prog {create|start|stop|destroy|status}"
+	echo $"Usage: $prog {create|start|stop|update|destroy|status}"
 	exit 1
 esac
