@@ -43,6 +43,11 @@ wait_for_mysql_initial_import(){
   sleep $MYSQL_IMPORT_SLEEP
 }
 
+xdebug_hostname(){
+  echo_title "Linux detected, updating /etc/hosts with host ip"
+  echo -e "`/sbin/ip route|awk '/default/ { print $3 }'`\tdocker.host.internal" | sudo tee -a /etc/hosts
+}
+
 update_settings(){
   echo_title "updating php version"
   docker-compose up -d
@@ -51,6 +56,12 @@ update_settings(){
     sw)    docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE s_core_shops SET name=\"$SHOP_NAME\", host=\"${SHOP_HOSTNAME}.${DOMAIN}\", base_path=\"/$SHOP_TYPE$SHOP_VERSION\" WHERE id=1;" $MYSQL_DATABASE ;;
     ox)    ;;
     mage)  docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"http://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=9;" $MYSQL_DATABASE && docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"http://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=10;" $MYSQL_DATABASE ;;
+  esac
+  OS="`uname`"
+  case $OS in
+    'Linux')
+      xdebug_hostname
+      ;;
   esac
   clean_cache
   print_info
