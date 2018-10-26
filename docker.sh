@@ -14,14 +14,28 @@ echo_title() {
 
 print_info(){
   echo -e "Status: " && docker-compose ps
-  echo -e "Php info: http://${SHOP_HOSTNAME}.${DOMAIN}"
-  echo -e "Shop: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}"
-  echo -e "phpmyadmin: http://${SHOP_HOSTNAME}.${DOMAIN}/phpmyadmin : (mysql)-user: root pw:root"
-  echo -e "mailcatcher: http://${SHOP_HOSTNAME}.${DOMAIN}:${MAILCATCHER_PORT}"
+  echo -e "PHPInfo:       https://${SHOP_HOSTNAME}.${DOMAIN}"
   case "${SHOP_TYPE}" in
-    sw)    echo -e "Shop Admin: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/backend user: demo password: demo\\nPlease wait 10-20s after creation until shop is ready!\\n" ;;
-    ox)    echo -e "Shop Admin: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/admin : user: support@fatchip.de password: support@fatchip.de\\n";;
-    mage)  echo -e "Shop Admin: http://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/admin : user: fatchip password: Fatchip1\\n" ;;
+    sw)   echo -e "Shop:          https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}";;
+    ox)
+      case "${SHOP_VERSION}" in
+        603)  echo -e "Shop:          https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/source";;
+        *)    echo -e "Shop:          https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}";;
+      esac
+      ;;
+    mage) echo -e "Shop:          https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}";;
+  esac
+  echo -e "phpmyadmin:    https://${SHOP_HOSTNAME}.${DOMAIN}/phpmyadmin : (mysql)-user: root pw:root"
+  echo -e "mailcatcher:   http://${SHOP_HOSTNAME}.${DOMAIN}:${MAILCATCHER_PORT}"
+  case "${SHOP_TYPE}" in
+    sw)    echo -e "Shop Admin:    https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/backend user: demo password: demo\\n";;
+    ox)
+      case "${SHOP_VERSION}" in
+        603)  echo -e "Shop Admin:    https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/source/admin : user: support@fatchip.de password: support@fatchip.de\\n";;
+        *)    echo -e "Shop Admin:    https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/admin : user: support@fatchip.de password: support@fatchip.de\\n";;
+      esac
+      ;;
+    mage)  echo -e "Shop Admin:    https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/admin : user: fatchip password: Fatchip1\\n" ;;
   esac
 }
 
@@ -32,9 +46,15 @@ clean_cache() {
            docker-compose exec -T apache-php rm -R "${APACHE_DOCUMENT_ROOT}/${SHOP_TYPE}${SHOP_VERSION}/web/cache"
            mkdir "data/www/${SHOP_TYPE}${SHOP_VERSION}/var/cache"
            mkdir "data/www/${SHOP_TYPE}${SHOP_VERSION}/web/cache";;
-    ox)    [ -d "data/www/${SHOP_TYPE}${SHOP_VERSION}/tmp" ] && docker-compose exec -T apache-php rm -R "${APACHE_DOCUMENT_ROOT}/${SHOP_TYPE}${SHOP_VERSION}/tmp"
-           mkdir "data/www/${SHOP_TYPE}${SHOP_VERSION}/tmp" ;;
-    mage)  docker-compose exec -T apache-php rm -R "${APACHE_DOCUMENT_ROOT}/${SHOP_TYPE}${SHOP_VERSION}/var/*";
+    ox)
+      case "${SHOP_VERSION}" in
+        603)  [ -d "data/www/${SHOP_TYPE}${SHOP_VERSION}/source/tmp" ] && docker-compose exec -T apache-php rm -R "${APACHE_DOCUMENT_ROOT}/${SHOP_TYPE}${SHOP_VERSION}/source/tmp"
+              mkdir "data/www/${SHOP_TYPE}${SHOP_VERSION}/source/tmp" ;;
+        *)    [ -d "data/www/${SHOP_TYPE}${SHOP_VERSION}/tmp" ] && docker-compose exec -T apache-php rm -R "${APACHE_DOCUMENT_ROOT}/${SHOP_TYPE}${SHOP_VERSION}/tmp"
+              mkdir "data/www/${SHOP_TYPE}${SHOP_VERSION}/tmp" ;;
+      esac
+      ;;
+    mage)  docker-compose exec -T apache-php rm -R "${APACHE_DOCUMENT_ROOT}/${SHOP_TYPE}${SHOP_VERSION}/var/*";;
   esac
 }
 
@@ -53,9 +73,9 @@ update_settings(){
   docker-compose up -d
   echo_title "updating shop_hostname for ${SHOP_TYPE}${SHOP_VERSION}"
   case "${SHOP_TYPE}" in
-    sw)    docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE s_core_shops SET name=\"$SHOP_NAME\", host=\"${SHOP_HOSTNAME}.${DOMAIN}\", base_path=\"/$SHOP_TYPE$SHOP_VERSION\" WHERE id=1;" $MYSQL_DATABASE ;;
+    sw)    docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE s_core_shops SET name=\"$SHOP_NAME\",secure =\"1\", host=\"${SHOP_HOSTNAME}.${DOMAIN}\", base_path=\"/$SHOP_TYPE$SHOP_VERSION\" WHERE id=1;" $MYSQL_DATABASE ;;
     ox)    ;;
-    mage)  docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"http://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=9;" $MYSQL_DATABASE && docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"http://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=10;" $MYSQL_DATABASE ;;
+    mage)  docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=9;" $MYSQL_DATABASE && docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=10;" $MYSQL_DATABASE ;;
   esac
   OS="`uname`"
   case $OS in
