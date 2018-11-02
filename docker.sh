@@ -54,12 +54,12 @@ clean_cache() {
               mkdir "data/www/${SHOP_TYPE}${SHOP_VERSION}/tmp" ;;
       esac
       ;;
-    mage)  docker-compose exec -T apache-php rm -R "${APACHE_DOCUMENT_ROOT}/${SHOP_TYPE}${SHOP_VERSION}/var/*";;
+    mage)  docker-compose exec -T apache-php rm -R "${APACHE_DOCUMENT_ROOT}/${SHOP_TYPE}${SHOP_VERSION}/var/cache/";;
   esac
 }
 
 wait_for_mysql_initial_import(){
-  echo_title  "waiting ${MYSQL_IMPORT_SLEEP=20S}s for initial db import"
+  echo_title  "waiting ${MYSQL_IMPORT_SLEEP}s for initial db import"
   sleep $MYSQL_IMPORT_SLEEP
 }
 
@@ -80,8 +80,11 @@ update_settings(){
            ;;
     ox)    docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE oxshops SET oxsmtp=\"127.0.0.1:1025\" ;" $MYSQL_DATABASE
            ;;
-    mage)  docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=9;" $MYSQL_DATABASE && docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=10;" $MYSQL_DATABASE
-           ;;
+    mage)
+          case "${SHOP_VERSION}" in
+        2*)   docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=2;" $MYSQL_DATABASE && docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=3;" $MYSQL_DATABASE ;;
+        *)    docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=9;" $MYSQL_DATABASE && docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=10;" $MYSQL_DATABASE ;;
+      esac
   esac
   OS="`uname`"
   case $OS in
