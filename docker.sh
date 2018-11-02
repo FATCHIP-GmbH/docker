@@ -19,7 +19,7 @@ print_info(){
     sw)   echo -e "Shop:          https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}";;
     ox)
       case "${SHOP_VERSION}" in
-        603)  echo -e "Shop:          https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/source";;
+        6*)  echo -e "Shop:          https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/source";;
         *)    echo -e "Shop:          https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}";;
       esac
       ;;
@@ -31,7 +31,7 @@ print_info(){
     sw)    echo -e "Shop Admin:    https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/backend user: demo password: demo\\n";;
     ox)
       case "${SHOP_VERSION}" in
-        603)  echo -e "Shop Admin:    https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/source/admin : user: support@fatchip.de password: support@fatchip.de\\n";;
+        6*)  echo -e "Shop Admin:    https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/source/admin : user: support@fatchip.de password: support@fatchip.de\\n";;
         *)    echo -e "Shop Admin:    https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}/admin : user: support@fatchip.de password: support@fatchip.de\\n";;
       esac
       ;;
@@ -48,7 +48,7 @@ clean_cache() {
            mkdir "data/www/${SHOP_TYPE}${SHOP_VERSION}/web/cache";;
     ox)
       case "${SHOP_VERSION}" in
-        603)  [ -d "data/www/${SHOP_TYPE}${SHOP_VERSION}/source/tmp" ] && docker-compose exec -T apache-php rm -R "${APACHE_DOCUMENT_ROOT}/${SHOP_TYPE}${SHOP_VERSION}/source/tmp"
+        6*)  [ -d "data/www/${SHOP_TYPE}${SHOP_VERSION}/source/tmp" ] && docker-compose exec -T apache-php rm -R "${APACHE_DOCUMENT_ROOT}/${SHOP_TYPE}${SHOP_VERSION}/source/tmp"
               mkdir "data/www/${SHOP_TYPE}${SHOP_VERSION}/source/tmp" ;;
         *)    [ -d "data/www/${SHOP_TYPE}${SHOP_VERSION}/tmp" ] && docker-compose exec -T apache-php rm -R "${APACHE_DOCUMENT_ROOT}/${SHOP_TYPE}${SHOP_VERSION}/tmp"
               mkdir "data/www/${SHOP_TYPE}${SHOP_VERSION}/tmp" ;;
@@ -73,9 +73,15 @@ update_settings(){
   docker-compose up -d
   echo_title "updating shop_hostname for ${SHOP_TYPE}${SHOP_VERSION}"
   case "${SHOP_TYPE}" in
-    sw)    docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE s_core_shops SET name=\"$SHOP_NAME\",secure =\"1\", host=\"${SHOP_HOSTNAME}.${DOMAIN}\", base_path=\"/$SHOP_TYPE$SHOP_VERSION\" WHERE id=1;" $MYSQL_DATABASE ;;
-    ox)    ;;
-    mage)  docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=9;" $MYSQL_DATABASE && docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=10;" $MYSQL_DATABASE ;;
+    sw)    docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE s_core_shops SET name=\"$SHOP_NAME\",secure =\"1\", host=\"${SHOP_HOSTNAME}.${DOMAIN}\", base_path=\"/$SHOP_TYPE$SHOP_VERSION\" WHERE id=1;" $MYSQL_DATABASE
+           docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse 'INSERT INTO s_core_config_values SET value="s:4:\"smtp\";", element_id=235, shop_id=1 ON DUPLICATE KEY UPDATE value="s:4:\"smtp\";", element_id=235, shop_id=1;' $MYSQL_DATABASE
+           docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse 'INSERT INTO s_core_config_values SET value="s:9:\"127.0.0.1\";", element_id=237, shop_id=1 ON DUPLICATE KEY UPDATE value="s:9:\"127.0.0.1\";", element_id=237, shop_id=1;' $MYSQL_DATABASE
+           docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse 'INSERT INTO s_core_config_values SET value="s:4:\"1025\";", element_id=238, shop_id=1 ON DUPLICATE KEY UPDATE value="s:4:\"1025\";", element_id=238, shop_id=1;' $MYSQL_DATABASE
+           ;;
+    ox)    docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE oxshops SET oxsmtp=\"127.0.0.1:1025\" ;" $MYSQL_DATABASE
+           ;;
+    mage)  docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=9;" $MYSQL_DATABASE && docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE core_config_data SET value=\"https://${SHOP_HOSTNAME}.${DOMAIN}/$SHOP_TYPE$SHOP_VERSION/\" WHERE config_id=10;" $MYSQL_DATABASE
+           ;;
   esac
   OS="`uname`"
   case $OS in
