@@ -14,7 +14,7 @@ echo_title() {
 
 print_info(){
   echo -e "Status: " && docker-compose ps
-  echo -e "PHPInfo:       https://${SHOP_HOSTNAME}.${DOMAIN}"
+  echo -e "PHPInfo:       https://${SHOP_HOSTNAME}.${DOMAIN}/phpinfo"
   case "${SHOP_TYPE}" in
     sw)   echo -e "Shop:          https://${SHOP_HOSTNAME}.${DOMAIN}/${SHOP_TYPE}${SHOP_VERSION}";;
     ox)
