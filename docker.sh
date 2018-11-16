@@ -65,7 +65,7 @@ wait_for_mysql_initial_import(){
 
 xdebug_hostname(){
   echo_title "Linux detected, updating /etc/hosts with host ip"
-  echo -e "`/sbin/ip route|awk '/default/ { print $3 }'`\thost.docker.internal" | sudo tee -a /etc/hosts
+  docker-compose exec -T apache-php /bin/update_hosts.sh
 }
 
 update_settings(){

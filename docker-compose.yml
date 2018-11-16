@@ -9,7 +9,7 @@ services:
     depends_on:
       - mysql
     volumes:
-      - ${PWD}/data/www/${SHOP_TYPE}${SHOP_VERSION}:/var/www/${SHOP_TYPE}${SHOP_VERSION}/
+      - ${PWD}/data/www:/var/www/
     env_file:
       - .env
     ports:
@@ -23,7 +23,7 @@ services:
       MYSQL_DATABASE: ${SHOP_TYPE}${SHOP_VERSION}
 
   mysql:
-    image: mariadb
+    image: mariadb:5.5
     hostname: mysql.${DOMAIN}
     restart: always
     volumes:
