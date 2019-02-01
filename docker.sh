@@ -58,9 +58,11 @@ clean_cache() {
   esac
 }
 
-wait_for_mysql_initial_import(){
-  echo_title  "waiting ${MYSQL_IMPORT_SLEEP}s for initial db import"
-  sleep $MYSQL_IMPORT_SLEEP
+mysql_initial_import(){
+    while ! docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD  -e "SELECT 1" >/dev/null 2>&1; do
+        sleep 1
+    done
+    docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD < data/www/${SHOP_TYPE}${SHOP_VERSION}/${SHOP_TYPE}${SHOP_VERSION}.sql
 }
 
 xdebug_hostname(){
@@ -110,7 +112,7 @@ create(){
   git_checkout
   echo_title "starting ${SHOP_TYPE}${SHOP_VERSION} on ${SHOP_HOSTNAME}.${DOMAIN}"
   docker-compose up -d
-  wait_for_mysql_initial_import
+  mysql_initial_import
   update_settings
 }
 
@@ -122,6 +124,7 @@ destroy(){
 start(){
   echo_title "starting ${SHOP_TYPE}${SHOP_VERSION} on ${SHOP_HOSTNAME}.${DOMAIN}"
   docker-compose start
+  xdebug_hostname
 }
 
 stop(){

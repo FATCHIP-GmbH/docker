@@ -27,7 +27,6 @@ services:
     hostname: mysql.${DOMAIN}
     restart: always
     volumes:
-      - ${PWD}/data/www/${SHOP_TYPE}${SHOP_VERSION}/${SHOP_TYPE}${SHOP_VERSION}.sql:/docker-entrypoint-initdb.d/${SHOP_TYPE}${SHOP_VERSION}.sql
       - mysql-data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
