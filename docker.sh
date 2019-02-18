@@ -73,6 +73,10 @@ xdebug_hostname(){
 update_settings(){
   echo_title "updating php version"
   docker-compose up -d
+  echo_title "waiting for mysql server to be reachable"
+  while ! docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD  -e "SELECT 1" >/dev/null 2>&1; do
+      sleep 1
+  done
   echo_title "updating shop_hostname for ${SHOP_TYPE}${SHOP_VERSION}"
   case "${SHOP_TYPE}" in
     sw)    docker-compose exec -T mysql mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD -Bse "UPDATE s_core_shops SET name=\"$SHOP_NAME\",secure =\"1\", host=\"${SHOP_HOSTNAME}.${DOMAIN}\", base_path=\"/$SHOP_TYPE$SHOP_VERSION\" WHERE id=1;" $MYSQL_DATABASE
